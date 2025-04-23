@@ -21,9 +21,23 @@
         若检测到异常，将输出adn置1，直接输出32位FP32结果：若两数均为零，输出state为00，返回零；
         若两数均为无穷大且符号相同，输出state为01，返回该无穷大，符号不同，输出state为10，返回NaN任一输入为NaN，输出state为11，返回NaN。
 
-·Compare
+·compare
 
         功能：比较两输入数的大小，确定对齐策略。
 
         详细说明：根据unpack的结果指数（8 bit）和尾数（24 bit）比较输入绝对值的大小。先比较阶码的大小，若相等，再进一步比较尾数大小。
-        若尾数还是相等的，将输出值same置1。输出结果a_larger（1 bit），s_o（1 bit，绝对值较大的输入的符号位），same（1bit，判断是否相等）。
+        若尾数还是相等的，将输出值same置1。输出结果a_larger（1 bit）s_o（1 bit，绝对值较大的输入的符号位）same（1bit，判断是否相等）。
+
+·exp_aligner
+
+        功能：负责指数对齐，并计算差值exp_diff = |exp_a - exp_b|。
+        
+        详细说明：输出较大的指数exp_larger （8 bit）作为中间结果的指数，
+        根据两指数大小计算exp_a - exp_b 或 exp_b - exp_a 得到exp_diff 输出（8bit）。
+
+·shifter_1
+
+        功能：将尾数右移对齐。
+
+        详细说明：将mant_a， mant_b，低位补0（25bit） 扩充到48bit，若输入的same值为0，则根据输入a_larger选择较小的数，将其右移exp_diff 位，得到s_shift（48bit），
+        较大的数右移一位空出符号位，输出结果l_shift（48bit）。若输入的same值为一，则直接输出结果l_shift（48bit），s_shift（48bit）。

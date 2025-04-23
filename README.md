@@ -69,8 +69,33 @@
 
         详细说明：正常情况下使adder_1_o左移lzd_o，输入到num_sh（48bit）中，并使exp_o（8bit）等于exp_larger减去（lzd_o-1）。
         特殊情况需考虑：lzd为0，代表有进位，adder_1_o直接等于num_sh，指数位exp_o = exp_larger + 1；
-        exp_larger<lzd，输出可能是非规格化数，adder_1_o左移exp_larger作为num_sh，
-        若num_sh最高位为1，exp_o为1，num_sh最高位为0，exp_o为0；若输入的adder_1_o为零，则直接使exp_o等于零。
+        若exp_larger<lzd，输出可能是非规格化数，adder_1_o左移exp_larger作为num_sh，
+        此时若num_sh最高位为1，exp_o为1，num_sh最高位为0，exp_o为0；若输入的adder_1_o为零，则直接使exp_o等于零。
         最后使用就近舍入到偶数的规则（IEEE 754默认的舍入模式）,将num_sh舍入到23位尾数。
         若要舍去的数组元素中的最高位为1，则舍入尾数使其加1，如舍入操作使尾数溢出，则使指数加1。
         模块输出舍入后结果输出为mant_o（23 bit），exp_o（8bit）。
+
+·pack模块
+
+        功能：打包为fp32格式。
+
+        详细说明：若输入的adn为0，说明如输入不为异常值，则将符号s_o、指数exp_o、尾数mant_o组合为FP32格式；
+        若输入的adn为1，说明输入为异常值，无视s_o、exp_o与mant_o，直接输出Outlier Handling的结果。
+
+最后进行仿真，先在sim文件夹中执行make sim命令进行编译，再执行make verdi命令进行仿真，以下为在linux系统中进行VCS仿真的波形图，从上到下依次为输入值a、b和输出answer：
+
+![image](photo/图片2.png)
+
+输入两个1.1时输出32’h400ccccc，即2.2，输入为-1.1与1.1时输出为0。
+
+![image](photo/图片3.png)
+
+输入两个0时输出为0。
+
+![image](photo/图片4.png)
+
+分别输入异号无穷和同号无穷时，分别输出NaN与无穷。
+
+![image](photo/图片5.png)
+
+输入中存在NaN时，输出NaN。

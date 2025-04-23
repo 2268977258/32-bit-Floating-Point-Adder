@@ -40,5 +40,37 @@
         功能：将尾数右移对齐。
 
         详细说明：将mant_a， mant_b，低位补0（25bit） 扩充到48bit，若输入的same值为0，
-        则根据输入a_larger选择较小的数，将其右移exp_diff 位，得到s_shift（48bit），
-        较大的数右移一位空出符号位，输出结果l_shift（48bit）。若输入的same值为一，则直接输出结果l_shift（48bit），s_shift（48bit）。
+        则根据输入a_larger选择较小的数，将其右移exp_diff 位，得到s_shift（48bit），较大的数右移一位空出符号位，输出结果l_shift（48bit）。
+        若输入的same值为一，则直接输出结果l_shift（48bit），s_shift（48bit）。
+
+·XOR
+
+        功能：执行异或操作
+
+        详细说明：对输入两个符号位s_a和s_b执行异或操作，判断符号位是否不同。
+        如果不同，则实际操作为尾数的减法，输出值XOR为1’b1；如果相同，则为加法，输出值XOR为1’b0。
+
+·adder_1
+
+        功能：执行48位加法操作
+        
+        详细说明：输入l_shift，s_shift，若输入的XOR为1则执行加法，
+        若输入的XOR为0，则将s_shift取反并加一，执行减法操作，输出48bit加法结果adder_1_o
+
+·LZD（Leading Zero Detector）
+
+        功能：对adder_1_o进行前导零检测。
+
+        详细说明：输入为adder_1_o（48bit），输出为adder_1_o结果最高位的1前0的个数lzd_o（8bit）
+
+·shift_and_cut
+
+        功能：对结果进行移位与剪切，输出尾数与阶码。
+
+        详细说明：正常情况下使adder_1_o左移lzd_o，输入到num_sh（48bit）中，并使exp_o（8bit）等于exp_larger减去（lzd_o-1）。
+        特殊情况需考虑：lzd为0，代表有进位，adder_1_o直接等于num_sh，指数位exp_o = exp_larger + 1；
+        exp_larger<lzd，输出可能是非规格化数，adder_1_o左移exp_larger作为num_sh，
+        若num_sh最高位为1，exp_o为1，num_sh最高位为0，exp_o为0；若输入的adder_1_o为零，则直接使exp_o等于零。
+        最后使用就近舍入到偶数的规则（IEEE 754默认的舍入模式）,将num_sh舍入到23位尾数。
+        若要舍去的数组元素中的最高位为1，则舍入尾数使其加1，如舍入操作使尾数溢出，则使指数加1。
+        模块输出舍入后结果输出为mant_o（23 bit），exp_o（8bit）。

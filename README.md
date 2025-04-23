@@ -39,5 +39,6 @@
 
         功能：将尾数右移对齐。
 
-        详细说明：将mant_a， mant_b，低位补0（25bit） 扩充到48bit，若输入的same值为0，则根据输入a_larger选择较小的数，将其右移exp_diff 位，得到s_shift（48bit），
+        详细说明：将mant_a， mant_b，低位补0（25bit） 扩充到48bit，若输入的same值为0，
+        则根据输入a_larger选择较小的数，将其右移exp_diff 位，得到s_shift（48bit），
         较大的数右移一位空出符号位，输出结果l_shift（48bit）。若输入的same值为一，则直接输出结果l_shift（48bit），s_shift（48bit）。
